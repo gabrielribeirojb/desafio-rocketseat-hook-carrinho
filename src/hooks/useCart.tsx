@@ -23,28 +23,64 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('@RocketShoes:cart');
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+      return JSON.parse(storagedCart);
+    }
 
     return [];
   });
 
   const addProduct = async (productId: number) => {
     try {
-      // TODO
+      //instancia novo array do carrinho
+       const updatedCart = [...cart];
+
+       const productExists = updatedCart.find(product => product.id === productId);
+
+       //faz uma chamada a api do estoque do carrinho para verificar quantidade
+       const stock = await api.get(`/stock/${productId}`);
+       const stockAmount = stock.data.amount;
+       const currentAmount = productExists ? productExists.amount : 0;
+       const amount = currentAmount + 1;
+
+       if(amount > stockAmount){
+        toast.error('Quantidade solicitada fora de estoque');
+        return;
+       }
+
+       //atualiza quantidade se produto existir
+       if(productExists){
+          productExists.amount = amount;
+          //produto novo:
+       } else {
+        const product = await api.get(`/products/${productId}`);
+
+        //adicionando novo produto com quantidade 1
+        const newProduct = {
+          ...product.data,
+          amount: 1
+        }
+
+        //perpetuar no cart
+        updatedCart.push(newProduct);
+       }
+
+       //perpetuar atualização no estado cart;
+       setCart(updatedCart);
+       localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));
+
     } catch {
-      // TODO
+      toast.error('Erro na remoção do produto');
     }
   };
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      //TODO
     } catch {
-      // TODO
+      //TODO
     }
   };
 
@@ -53,9 +89,9 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
+      //TODO
     } catch {
-      // TODO
+      //TODO
     }
   };
 
