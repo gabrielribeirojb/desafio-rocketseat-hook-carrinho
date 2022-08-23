@@ -29,14 +29,14 @@ const Home = (): JSX.Element => {
     //novo objeto com referência à sumAmount
     const newSumAmount = {...sumAmount};
     //acesso à chave de forma dinâmica
-    newSumAmount[product.id] = newSumAmount[product.amount];
+    newSumAmount[product.id] = product.amount;
 
     return newSumAmount;
   }, {} as CartItemsAmount)
 
   useEffect(() => {
     async function loadProducts() {
-      const response = await api.get<Product[]>(`products`);
+      const response = await api.get<Product[]>('products');
 
       const data = response.data.map(product => ({
         ...product,
